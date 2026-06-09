@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>محاسبه حقوق پایه از مبلغ خالص</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:'Vazirmatn',sans-serif;
+    background:#f5f7fa;
+    padding:40px 20px;
+    color:#1f2937;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+}
+
+.card{
+    background:#fff;
+    border-radius:18px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+    font-size:28px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:18px;
+}
+
+.field{
+    display:flex;
+    flex-direction:column;
+}
+
+label{
+    margin-bottom:8px;
+    font-weight:500;
+}
+
+input,
+select{
+    padding:12px 14px;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+    font-family:inherit;
+    font-size:14px;
+}
+
+input:focus,
+select:focus{
+    outline:none;
+    border-color:#2563eb;
+}
+
+button{
+    width:100%;
+    margin-top:25px;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:#2563eb;
+    color:#fff;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+table{
+    width:100%;
+    margin-top:30px;
+    border-collapse:collapse;
+}
+
+th,
+td{
+    padding:14px;
+    border-bottom:1px solid #e5e7eb;
+}
+
+th{
+    background:#eff6ff;
+    text-align:right;
+    width:45%;
+}
+
+td{
+    text-align:left;
+}
+
+.net-row{
+    background:#ecfdf5;
+    font-weight:700;
+}
+</style>
+<script id="scripts" type="text/javascript" src="/scripts_5b78a9a0ebbbbb75eda23b4e12a60813ca1e257a.js"></script>
+<meta name="referrer" content="same-origin" />
+
+			<link rel="icon" sizes="16x16" type="image/png" href=/assets/favicon_16.png />
+			<link rel="icon" sizes="32x32" type="image/png" href=/assets/favicon_32.png />
+				<link rel="icon" sizes="any" type="image/svg+xml" href=/assets/favicon.svg />
+<title>APK GROUP</title><meta name="application-name" content="APK GROUP"><meta name="apple-mobile-web-app-title" content="APK GROUP">
+<meta http-equiv="content-language" content=""><meta name="language" content="">
+<meta name="robots" content="INDEX,FOLLOW">
+<meta name="msvalidate.01" content="">
+<meta name="google-site-verification" content="">
+<meta property="fb:app_id" content="">
+<base href="/">
+</head>
+
+<body>
+
+<noscript style="color: white; text-align:center">
+	You need to enable JavaScript to run this app.
+</noscript>
+<div id="react-root">
+	<div class="page-loading" role="alert" aria-busy="true" aria-live="polite" aria-label="loading">
+		<div class="loading__animation">
+			<div class="loading__animation__bounce"></div>
+			<div class="loading__animation__bounce"></div>
+			<div class="loading__animation__bounce"></div>
+		</div>
+	</div>
+</div>
+
+<style id='css-variables'> :root {}</style>
+
+
+<div class="container">
+<div class="card">
+
+<h1>محاسبه حقوق پایه از مبلغ خالص پرداختی</h1>
+
+<div class="form-grid">
+
+    <div class="field">
+        <label>خالص پرداختی (ریال)</label>
+        <input type="number" id="netSalary" placeholder="750000000">
+    </div>
+
+    <div class="field">
+        <label>وضعیت تأهل</label>
+        <select id="married">
+            <option value="0">مجرد</option>
+            <option value="1">متأهل</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label>تعداد فرزند</label>
+        <input type="number" id="children" value="0">
+    </div>
+
+</div>
+
+<button onclick="calculate()">
+محاسبه
+</button>
+
+<table>
+<tbody>
+
+<tr>
+    <th>دستمزد روزانه</th>
+    <td id="dailyWage">-</td>
+</tr>
+
+<tr>
+    <th>حقوق پایه ماهانه</th>
+    <td id="baseSalary">-</td>
+</tr>
+
+<tr>
+    <th>حق اولاد</th>
+    <td id="childAllowance">-</td>
+</tr>
+
+<tr>
+    <th>حق مسکن</th>
+    <td id="housing">-</td>
+</tr>
+
+<tr>
+    <th>حق تأهل</th>
+    <td id="marriageAllowance">-</td>
+</tr>
+
+<tr>
+    <th>بن کارگری و خواروبار</th>
+    <td id="foodAllowance">-</td>
+</tr>
+
+<tr>
+    <th>جمع حقوق و مزایا (ناخالص)</th>
+    <td id="grossSalary">-</td>
+</tr>
+
+<tr>
+    <th>بیمه سهم کارمند (۷٪)</th>
+    <td id="insurance">-</td>
+</tr>
+
+<tr class="net-row">
+    <th>خالص پرداختی</th>
+    <td id="netResult">-</td>
+</tr>
+
+</tbody>
+</table>
+
+</div>
+</div>
+
+<script>
+
+function formatNumber(num){
+    return Math.round(num).toLocaleString('fa-IR');
+}
+
+function calculate(){
+
+    const targetNet =
+        Number(document.getElementById('netSalary').value) || 0;
+
+    const married =
+        Number(document.getElementById('married').value);
+
+    const children =
+        Number(document.getElementById('children').value) || 0;
+
+    // مقادیر ثابت (ریال)
+    const HOUSING = 30000000;
+    const FOOD = 22000000;
+    const MARRIAGE = married ? 5000000 : 0;
+    const CHILD_ALLOWANCE = children * 16625549;
+
+    // حقوق پایه از روی خالص
+    const baseSalary =
+        (
+            targetNet
+            - CHILD_ALLOWANCE
+            - 0.93 * (HOUSING + FOOD + MARRIAGE)
+        ) / 0.93;
+
+    // دستمزد روزانه
+    const dailyWage = baseSalary / 30;
+
+    // بیمه
+    const insurance =
+        (baseSalary + HOUSING + FOOD + MARRIAGE) * 0.07;
+
+    // ناخالص
+    const grossSalary =
+        baseSalary +
+        HOUSING +
+        FOOD +
+        MARRIAGE +
+        CHILD_ALLOWANCE;
+
+    // خالص نهایی جهت کنترل
+    const netResult =
+        grossSalary - insurance;
+
+    document.getElementById('dailyWage').innerText =
+        formatNumber(dailyWage) + ' ریال';
+
+    document.getElementById('baseSalary').innerText =
+        formatNumber(baseSalary) + ' ریال';
+
+    document.getElementById('childAllowance').innerText =
+        formatNumber(CHILD_ALLOWANCE) + ' ریال';
+
+    document.getElementById('housing').innerText =
+        formatNumber(HOUSING) + ' ریال';
+
+    document.getElementById('marriageAllowance').innerText =
+        formatNumber(MARRIAGE) + ' ریال';
+
+    document.getElementById('foodAllowance').innerText =
+        formatNumber(FOOD) + ' ریال';
+
+    document.getElementById('grossSalary').innerText =
+        formatNumber(grossSalary) + ' ریال';
+
+    document.getElementById('insurance').innerText =
+        formatNumber(insurance) + ' ریال';
+
+    document.getElementById('netResult').innerText =
+        formatNumber(netResult) + ' ریال';
+}
+
+</script>
+
+</body>
+</html>
