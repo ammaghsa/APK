@@ -1,73 +1,161 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Jitsi Attendance</title>
+    <title>APK GROUP Meeting</title>
     <script src="./external_api.js"></script>
-<script id="scripts" type="text/javascript" src="/scripts_5b78a9a0ebbbbb75eda23b4e12a60813ca1e257a.js"></script>
-<meta name="referrer" content="same-origin" />
 
-			<link rel="icon" sizes="16x16" type="image/png" href=/assets/favicon_16.png />
-			<link rel="icon" sizes="32x32" type="image/png" href=/assets/favicon_32.png />
-				<link rel="icon" sizes="any" type="image/svg+xml" href=/assets/favicon.svg />
-<title>APK GROUP</title><meta name="application-name" content="APK GROUP"><meta name="apple-mobile-web-app-title" content="APK GROUP">
-<meta http-equiv="content-language" content=""><meta name="language" content="">
-<meta name="robots" content="INDEX,FOLLOW">
-<meta name="msvalidate.01" content="">
-<meta name="google-site-verification" content="">
-<meta property="fb:app_id" content="">
-<base href="/">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        #startScreen {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            background: #f5f5f5;
+        }
+
+        #roomInput {
+            width: 320px;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        #joinBtn {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+        }
+
+        #meet {
+            height: 100vh;
+            display: none;
+        }
+    </style>
 </head>
+
 <body>
 
-<noscript style="color: white; text-align:center">
-	You need to enable JavaScript to run this app.
-</noscript>
-<div id="react-root">
-	<div class="page-loading" role="alert" aria-busy="true" aria-live="polite" aria-label="loading">
-		<div class="loading__animation">
-			<div class="loading__animation__bounce"></div>
-			<div class="loading__animation__bounce"></div>
-			<div class="loading__animation__bounce"></div>
-		</div>
-	</div>
+<div id="startScreen">
+
+    <h2>APK GROUP Meeting</h2>
+
+    <input
+        id="roomInput"
+        type="text"
+        placeholder="نام اتاق را وارد کنید"
+        autofocus
+    >
+
+    <button id="joinBtn" onclick="startMeeting()">
+        ورود به جلسه
+    </button>
+
 </div>
 
-<style id='css-variables'> :root {}</style>
-
-
-<div id="meet" style="height:100vh;"></div>
+<div id="meet"></div>
 
 <script>
-
-const params = new URLSearchParams(window.location.search);
-const roomName = params.get('room');
-
-if (!roomName) {
-    alert('room parameter not found');
-    throw new Error('No room specified');
-}
 
 const domain = "meet.apk-group.net";
 
 const TARGET_HOUR = 18;
 const TARGET_MINUTE = 33;
 
+let api = null;
+let roomName = "";
+
 let attendanceStarted = false;
 let joinedUsers = [];
 
 
-// ساخت Jitsi
-const api = new JitsiMeetExternalAPI(domain, {
-    roomName: roomName,
-    width: "100%",
-    height: "100%",
-    parentNode: document.querySelector('#meet')
-});
+// =========================
+// شروع جلسه
+// =========================
+
+function startMeeting() {
+
+    roomName = document
+        .getElementById("roomInput")
+        .value
+        .trim();
+
+    if (!roomName) {
+        alert("نام اتاق را وارد کنید");
+        return;
+    }
+
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("meet").style.display = "block";
+
+    api = new JitsiMeetExternalAPI(domain, {
+        roomName: roomName,
+        width: "100%",
+        height: "100%",
+        parentNode: document.querySelector('#meet')
+    });
+
+    registerEvents();
+}
+
+
+// Enter روی کیبورد
+document
+    .getElementById("roomInput")
+    .addEventListener("keydown", function(e) {
+
+        if (e.key === "Enter") {
+            startMeeting();
+        }
+
+    });
 
 
 // =========================
-// شروع سیستم حضور
+// ثبت رویدادها
 // =========================
+
+function registerEvents() {
+
+    api.addListener('participantJoined', (p) => {
+
+        const name = p.displayName || "Guest";
+
+        // اگر اسم تکراری بود
+        const exists = joinedUsers.find(
+            u => u.name === name
+        );
+
+        if (exists) return;
+
+        joinedUsers.push({
+            id: p.participantId,
+            name: name,
+            time: new Date().toLocaleTimeString()
+        });
+
+        if (attendanceStarted) {
+            sendAttendanceList();
+        }
+
+    });
+
+}
+
+
+// =========================
+// شروع حضور و غیاب
+// =========================
+
 function startAttendance() {
 
     attendanceStarted = true;
@@ -79,60 +167,53 @@ function startAttendance() {
 
 
 // =========================
-// گرفتن ورود افراد
+// چک زمان
 // =========================
-api.addListener('participantJoined', (p) => {
 
-    const name = p.displayName || "Guest";
-
-    // ❗ اگر اسم قبلاً ثبت شده → هیچ کاری نکن
-    const exists = joinedUsers.find(u => u.name === name);
-    if (exists) return;
-
-    joinedUsers.push({
-        id: p.participantId,
-        name: name,
-        time: new Date().toLocaleTimeString()
-    });
-
-    if (attendanceStarted) {
-        sendAttendanceList();
-    }
-});
-
-
-// =========================
-// چک زمان شروع
-// =========================
 function checkTime() {
 
     const now = new Date();
 
     const afterTarget =
         now.getHours() > TARGET_HOUR ||
-        (now.getHours() === TARGET_HOUR &&
-         now.getMinutes() >= TARGET_MINUTE);
+        (
+            now.getHours() === TARGET_HOUR &&
+            now.getMinutes() >= TARGET_MINUTE
+        );
 
     if (afterTarget && !attendanceStarted) {
+
         startAttendance();
+
     }
+
 }
 
 setInterval(checkTime, 10000);
 
 
 // =========================
-// ارسال لیست به چت
+// ارسال لیست
 // =========================
+
 function sendAttendanceList() {
 
-    let message = "📋 لیست حضور:\n\n";
+    let message = "📋 لیست حضور\n";
+    message += "━━━━━━━━━━━━━━\n\n";
 
     joinedUsers.forEach((u, i) => {
-        message += `${i + 1}. ${u.name} - ${u.time}\n`;
+
+        message += `${i + 1}. ${u.name}\n`;
+        message += `⏱ ${u.time}\n\n`;
+
     });
 
-    api.executeCommand('sendChatMessage', message, undefined);
+    api.executeCommand(
+        'sendChatMessage',
+        message,
+        undefined
+    );
+
 }
 
 </script>
