@@ -1,39 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>APK GROUP Meeting</title>
+
     <script src="./external_api.js"></script>
 
+    <!-- Vazirmatn Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body,
+        input,
+        button {
+            font-family: "Vazirmatn", sans-serif;
+        }
+
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            background: #f2f3f5;
         }
 
         #startScreen {
             height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 15px;
-            background: #f5f5f5;
+            background:
+                linear-gradient(
+                    135deg,
+                    #f5f7fa 0%,
+                    #e4e9f2 100%
+                );
+        }
+
+        .card {
+            width: 420px;
+            background: #ffffff;
+            padding: 36px;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,.10);
+            text-align: center;
+            direction: rtl;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
         }
 
         #roomInput {
-            width: 320px;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            border: 1px solid #d7dce3;
+            border-radius: 10px;
+            outline: none;
+            transition: .2s;
+            text-align: center;
+        }
+
+        #roomInput:focus {
+            border-color: #0a84ff;
+            box-shadow: 0 0 0 3px rgba(10,132,255,.15);
         }
 
         #joinBtn {
-            padding: 12px 24px;
-            font-size: 16px;
-            cursor: pointer;
+            width: 100%;
+            margin-top: 14px;
+            padding: 14px;
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
+            background: #0a84ff;
+            color: white;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        #joinBtn:hover {
+            opacity: .92;
         }
 
         #meet {
@@ -47,18 +111,30 @@
 
 <div id="startScreen">
 
-    <h2>APK GROUP Meeting</h2>
+    <div class="card">
 
-    <input
-        id="roomInput"
-        type="text"
-        placeholder="نام اتاق را وارد کنید"
-        autofocus
-    >
+        <div class="logo">
+            APK GROUP
+        </div>
 
-    <button id="joinBtn" onclick="startMeeting()">
-        ورود به جلسه
-    </button>
+        <div class="subtitle">
+            نام اتاق جلسه را وارد کنید
+        </div>
+
+        <input
+            id="roomInput"
+            type="text"
+            placeholder="مثال: Daily-Meeting"
+            autofocus
+        >
+
+        <button
+            id="joinBtn"
+            onclick="startMeeting()">
+            ورود به جلسه
+        </button>
+
+    </div>
 
 </div>
 
@@ -108,7 +184,10 @@ function startMeeting() {
 }
 
 
-// Enter روی کیبورد
+// =========================
+// ورود با Enter
+// =========================
+
 document
     .getElementById("roomInput")
     .addEventListener("keydown", function(e) {
@@ -121,7 +200,7 @@ document
 
 
 // =========================
-// ثبت رویدادها
+// رویدادها
 // =========================
 
 function registerEvents() {
@@ -130,7 +209,6 @@ function registerEvents() {
 
         const name = p.displayName || "Guest";
 
-        // اگر اسم تکراری بود
         const exists = joinedUsers.find(
             u => u.name === name
         );
@@ -140,7 +218,7 @@ function registerEvents() {
         joinedUsers.push({
             id: p.participantId,
             name: name,
-            time: new Date().toLocaleTimeString()
+            time: new Date().toLocaleTimeString('fa-IR')
         });
 
         if (attendanceStarted) {
@@ -182,9 +260,7 @@ function checkTime() {
         );
 
     if (afterTarget && !attendanceStarted) {
-
         startAttendance();
-
     }
 
 }
@@ -193,7 +269,7 @@ setInterval(checkTime, 10000);
 
 
 // =========================
-// ارسال لیست
+// ارسال لیست به چت
 // =========================
 
 function sendAttendanceList() {
