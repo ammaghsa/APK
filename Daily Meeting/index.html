@@ -8,20 +8,14 @@
 
     <script src="./external_api.js"></script>
 
-    <!-- Vazirmatn Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
-        html,
-        body,
-        input,
-        button {
+        html, body, input, button {
             font-family: "Vazirmatn", sans-serif;
         }
 
@@ -35,17 +29,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background:
-                linear-gradient(
-                    135deg,
-                    #f5f7fa 0%,
-                    #e4e9f2 100%
-                );
+            background: linear-gradient(135deg,#f5f7fa 0%,#e4e9f2 100%);
         }
 
         .card {
             width: 420px;
-            background: #ffffff;
+            background: #fff;
             padding: 36px;
             border-radius: 16px;
             box-shadow: 0 12px 40px rgba(0,0,0,.10);
@@ -56,7 +45,6 @@
         .logo {
             font-size: 30px;
             font-weight: 700;
-            color: #222;
             margin-bottom: 8px;
         }
 
@@ -73,13 +61,24 @@
             border: 1px solid #d7dce3;
             border-radius: 10px;
             outline: none;
-            transition: .2s;
             text-align: center;
         }
 
-        #roomInput:focus {
-            border-color: #0a84ff;
-            box-shadow: 0 0 0 3px rgba(10,132,255,.15);
+        .absent-list {
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid #d7dce3;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .absent-list label {
+            display: block;
+            margin: 4px 0;
+            cursor: pointer;
+            font-size: 14px;
         }
 
         #joinBtn {
@@ -93,11 +92,6 @@
             font-size: 15px;
             font-weight: 500;
             cursor: pointer;
-            transition: .2s;
-        }
-
-        #joinBtn:hover {
-            opacity: .92;
         }
 
         #meet {
@@ -106,36 +100,22 @@
         }
     </style>
 </head>
-
 <body>
 
 <div id="startScreen">
-
     <div class="card">
 
-        <div class="logo">
-            APK GROUP
-        </div>
+        <div class="logo">APK GROUP</div>
 
-        <div class="subtitle">
-            نام اتاق جلسه را وارد کنید
-        </div>
+        <div class="subtitle">نام اتاق جلسه را وارد کنید</div>
 
-        <input
-            id="roomInput"
-            type="text"
-            placeholder="مثال: Daily-Meeting"
-            autofocus
-        >
+        <input id="roomInput" type="text" placeholder="مثال: Daily-Meeting" autofocus>
 
-        <button
-            id="joinBtn"
-            onclick="startMeeting()">
-            ورود به جلسه
-        </button>
+        <div class="absent-list" id="absentList"></div>
+
+        <button id="joinBtn" onclick="startMeeting()">ورود به جلسه</button>
 
     </div>
-
 </div>
 
 <div id="meet"></div>
@@ -153,22 +133,49 @@ let roomName = "";
 let attendanceStarted = false;
 let joinedUsers = [];
 
+const absentNames = [
+"ابوالفضل اقبالی","احسان نصر","امیر جواد آیت الهی","امیر مهدی قاسمی",
+"امیرعلی صبور","حمید رضا ابراهیمی","خسرو خسروی","سوده ظروفچیان",
+"علی چاویده","علی زاده ربیعی","فرید انصاری","محمد رضا حاجی عزیزی",
+"محمد رضا شاهی","محمد رضا واحدی","محمد کاظم حوری","محمد هادی مسلم",
+"محمدرضا زمانی","مسعود پاک آئین","مهدی سلطانی","نوید نصیری زاده",
+"یوسف نصیری زاده","افسانه پیرایش","حبیب دانشور","محمد شمالی"
+];
 
-// =========================
-// شروع جلسه
-// =========================
+let selectedAbsentees = [];
+
+function buildAbsentList() {
+    const container = document.getElementById("absentList");
+
+    container.innerHTML =
+        '<div style="font-weight:700;margin-bottom:8px;">🚫 لیست غایبین جلسه</div>';
+
+    absentNames.forEach(name => {
+        container.innerHTML += `
+            <label>
+                <input type="checkbox" value="${name}">
+                ${name}
+            </label>
+        `;
+    });
+}
+
+buildAbsentList();
 
 function startMeeting() {
 
-    roomName = document
-        .getElementById("roomInput")
-        .value
-        .trim();
+    roomName = document.getElementById("roomInput").value.trim();
 
     if (!roomName) {
         alert("نام اتاق را وارد کنید");
         return;
     }
+
+    selectedAbsentees = [];
+
+    document
+        .querySelectorAll('#absentList input:checked')
+        .forEach(cb => selectedAbsentees.push(cb.value));
 
     document.getElementById("startScreen").style.display = "none";
     document.getElementById("meet").style.display = "block";
@@ -183,25 +190,9 @@ function startMeeting() {
     registerEvents();
 }
 
-
-// =========================
-// ورود با Enter
-// =========================
-
-document
-    .getElementById("roomInput")
-    .addEventListener("keydown", function(e) {
-
-        if (e.key === "Enter") {
-            startMeeting();
-        }
-
-    });
-
-
-// =========================
-// رویدادها
-// =========================
+document.getElementById("roomInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") startMeeting();
+});
 
 function registerEvents() {
 
@@ -209,10 +200,7 @@ function registerEvents() {
 
         const name = p.displayName || "Guest";
 
-        const exists = joinedUsers.find(
-            u => u.name === name
-        );
-
+        const exists = joinedUsers.find(u => u.name === name);
         if (exists) return;
 
         joinedUsers.push({
@@ -224,29 +212,13 @@ function registerEvents() {
         if (attendanceStarted) {
             sendAttendanceList();
         }
-
     });
-
 }
-
-
-// =========================
-// شروع حضور و غیاب
-// =========================
 
 function startAttendance() {
-
     attendanceStarted = true;
-
-    console.log("Attendance started");
-
     sendAttendanceList();
 }
-
-
-// =========================
-// چک زمان
-// =========================
 
 function checkTime() {
 
@@ -254,23 +226,15 @@ function checkTime() {
 
     const afterTarget =
         now.getHours() > TARGET_HOUR ||
-        (
-            now.getHours() === TARGET_HOUR &&
-            now.getMinutes() >= TARGET_MINUTE
-        );
+        (now.getHours() === TARGET_HOUR &&
+         now.getMinutes() >= TARGET_MINUTE);
 
     if (afterTarget && !attendanceStarted) {
         startAttendance();
     }
-
 }
 
 setInterval(checkTime, 10000);
-
-
-// =========================
-// ارسال لیست به چت
-// =========================
 
 function sendAttendanceList() {
 
@@ -278,18 +242,21 @@ function sendAttendanceList() {
     message += "━━━━━━━━━━━━━━\n\n";
 
     joinedUsers.forEach((u, i) => {
-
         message += `${i + 1}. ${u.name}\n`;
         message += `⏱ ${u.time}\n\n`;
-
     });
 
-    api.executeCommand(
-        'sendChatMessage',
-        message,
-        undefined
-    );
+    if (selectedAbsentees.length > 0) {
 
+        message += "━━━━━━━━━━━━━━\n\n";
+        message += "🚫 غایبین جلسه\n\n";
+
+        selectedAbsentees.forEach(name => {
+            message += `• ${name}\n`;
+        });
+    }
+
+    api.executeCommand('sendChatMessage', message, undefined);
 }
 
 </script>
