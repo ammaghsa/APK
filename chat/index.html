@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ارسال پیام گروهی</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+body {
+    font-family: Tahoma, sans-serif;
+    direction: rtl;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+#log {
+    margin-top: 20px;
+    white-space: pre-wrap;
+    border: 1px solid #ccc;
+    padding: 10px;
+    height: 400px;
+    overflow-y: auto;
+}
+</style>
+</head>
+<body>
+
+<h2>ارسال پیام از فایل اکسل</h2>
+
+<input type="file" id="excelFile" accept=".xlsx,.xls">
+<button onclick="sendMessages()">ارسال پیام‌ها</button>
+
+<div id="log"></div>
+
+<script>
+
+const API_URL = "https://chat.apk-group.net/hooks/69aaeea10d2f6aa03b5d7e1e/k6MdecsuD84FnKPCt7hf8cJkMu2bQccR4rYWkjY2e5HfMD7";
+
+function log(text) {
+    const div = document.getElementById("log");
+    div.innerHTML += text + "<br>";
+    div.scrollTop = div.scrollHeight;
+}
+
+async function sendMessages() {
+
+    const fileInput = document.getElementById("excelFile");
+
+    if (!fileInput.files.length) {
+        alert("فایل اکسل را انتخاب کنید");
+        return;
+    }
+
+    const file = fileInput.files[0];
+
+    const reader = new FileReader();
+
+    reader.onload = async function(e) {
+
+        const data = new Uint8Array(e.target.result);
+
+        const workbook = XLSX.read(data, {
+            type: "array"
+        });
+
+        const sheetName = workbook.SheetNames[0];
+
+        const sheet = workbook.Sheets[sheetName];
+
+        const rows = XLSX.utils.sheet_to_json(sheet);
+
+        log(`تعداد ${rows.length} رکورد پیدا شد`);
+
+        for (let i = 0; i < rows.length; i++) {
+
+            let username = String(rows[i].username || "").trim();
+            const message = String(rows[i].message || "");
+
+            if (!username.startsWith("@")) {
+                username = "@" + username;
+            }
+
+            const body = {
+                channel: username,
+                text: message
+            };
+
+            try {
+
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const result = await response.text();
+
+                log(
+                    `${response.status} | ${username} | ${result}`
+                );
+
+            } catch (err) {
+
+                log(
+                    `ERROR | ${username} | ${err.message}`
+                );
+
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        log("پایان ارسال");
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+</script>
+
+</body>
+</html>
