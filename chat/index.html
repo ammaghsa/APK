@@ -65,8 +65,8 @@
     </div>
 
     <script>
-        // پراکسی جدید (بهتر برای POST)
-        const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+        // پراکسی Cloudflare (بهترین گزینه فعلی)
+        const CORS_PROXY = "https://test.cors.workers.dev/?";
 
         function log(text, type = '') {
             const div = document.getElementById("log");
@@ -123,13 +123,13 @@
                             if (response.ok) {
                                 log(`✅ ${username} | ارسال موفق`, 'success');
                             } else {
-                                log(`❌ ${username} | ${response.status} - ${resultText.substring(0, 120)}`, 'error');
+                                log(`❌ ${username} | ${response.status} - ${resultText.substring(0, 150)}`, 'error');
                             }
                         } catch (err) {
                             log(`❌ ${username} | خطای اتصال: ${err.message}`, 'error');
                         }
 
-                        await new Promise(r => setTimeout(r, 900)); // تأخیر مناسب
+                        await new Promise(r => setTimeout(r, 1000)); // تأخیر ۱ ثانیه
                     }
                     log("🎉 عملیات تمام شد!", 'success');
                 } catch (err) {
