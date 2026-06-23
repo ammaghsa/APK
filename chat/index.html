@@ -65,8 +65,7 @@
     </div>
 
     <script>
-        // پراکسی جدید و قوی‌تر
-        const CORS_PROXY = "https://proxy.corsfix.com/?";
+        const CORS_PROXY = "https://corsproxy.io/?";
 
         function log(text, type = '') {
             const div = document.getElementById("log");
@@ -118,18 +117,18 @@
                                 })
                             });
 
-                            const resultText = await response.text().catch(() => "");
+                            const resultText = await response.text().catch(() => "بدون پاسخ");
 
                             if (response.ok) {
                                 log(`✅ ${username} | ارسال موفق`, 'success');
                             } else {
-                                log(`❌ ${username} | ${response.status} - ${resultText.substring(0, 100)}`, 'error');
+                                log(`❌ ${username} | ${response.status} - ${resultText.substring(0, 150)}`, 'error');
                             }
                         } catch (err) {
-                            log(`❌ ${username} | خطا: ${err.message}`, 'error');
+                            log(`❌ ${username} | خطای اتصال: ${err.message}`, 'error');
                         }
 
-                        await new Promise(r => setTimeout(r, 800)); // تأخیر بیشتر
+                        await new Promise(r => setTimeout(r, 800));
                     }
                     log("🎉 عملیات تمام شد!", 'success');
                 } catch (err) {
