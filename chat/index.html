@@ -65,7 +65,8 @@
     </div>
 
     <script>
-        const CORS_PROXY = "https://corsproxy.io/?";
+        // پراکسی جدید (بهتر برای POST)
+        const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 
         function log(text, type = '') {
             const div = document.getElementById("log");
@@ -122,13 +123,13 @@
                             if (response.ok) {
                                 log(`✅ ${username} | ارسال موفق`, 'success');
                             } else {
-                                log(`❌ ${username} | ${response.status} - ${resultText.substring(0, 150)}`, 'error');
+                                log(`❌ ${username} | ${response.status} - ${resultText.substring(0, 120)}`, 'error');
                             }
                         } catch (err) {
                             log(`❌ ${username} | خطای اتصال: ${err.message}`, 'error');
                         }
 
-                        await new Promise(r => setTimeout(r, 800));
+                        await new Promise(r => setTimeout(r, 900)); // تأخیر مناسب
                     }
                     log("🎉 عملیات تمام شد!", 'success');
                 } catch (err) {
