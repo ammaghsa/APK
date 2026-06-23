@@ -1,132 +1,171 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ارسال پیام گروهی</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ارسال پیام گروهی</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap');
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-<style>
-body {
-    font-family: Tahoma, sans-serif;
-    direction: rtl;
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
-}
-
-button {
-    padding: 10px 20px;
-    cursor: pointer;
-}
-
-#log {
-    margin-top: 20px;
-    white-space: pre-wrap;
-    border: 1px solid #ccc;
-    padding: 10px;
-    height: 400px;
-    overflow-y: auto;
-}
-</style>
+        body {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            direction: rtl;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+        }
+        button {
+            padding: 12px 25px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0055aa;
+        }
+        #log {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+            padding: 15px;
+            height: 450px;
+            overflow-y: auto;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            font-family: 'Vazirmatn', monospace;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h2>ارسال پیام از فایل اکسل</h2>
+        
+        <label for="webhook">آدرس Webhook (Hook):</label>
+        <input type="text" id="webhook" value="https://chat.apk-group.net/hooks/69aaeea10d2f6aa03b5d7e1e/k6MdecsuD84FnKPCt7hf8cJkMu2bQccR4rYWkjY2e5HfMD7a">
+        
+        <label for="excelFile">فایل اکسل:</label>
+        <input type="file" id="excelFile" accept=".xlsx,.xls">
+        
+        <button onclick="sendMessages()">ارسال پیام‌ها</button>
+        
+        <div id="log"></div>
+    </div>
 
-<h2>ارسال پیام از فایل اکسل</h2>
-
-<input type="file" id="excelFile" accept=".xlsx,.xls">
-<button onclick="sendMessages()">ارسال پیام‌ها</button>
-
-<div id="log"></div>
-
-<script>
-
-const API_URL = "https://chat.apk-group.net/hooks/69aaeea10d2f6aa03b5d7e1e/k6MdecsuD84FnKPCt7hf8cJkMu2bQccR4rYWkjY2e5HfMD7a";
-
-function log(text) {
-    const div = document.getElementById("log");
-    div.innerHTML += text + "<br>";
-    div.scrollTop = div.scrollHeight;
-}
-
-async function sendMessages() {
-
-    const fileInput = document.getElementById("excelFile");
-
-    if (!fileInput.files.length) {
-        alert("فایل اکسل را انتخاب کنید");
-        return;
-    }
-
-    const file = fileInput.files[0];
-
-    const reader = new FileReader();
-
-    reader.onload = async function(e) {
-
-        const data = new Uint8Array(e.target.result);
-
-        const workbook = XLSX.read(data, {
-            type: "array"
-        });
-
-        const sheetName = workbook.SheetNames[0];
-
-        const sheet = workbook.Sheets[sheetName];
-
-        const rows = XLSX.utils.sheet_to_json(sheet);
-
-        log(`تعداد ${rows.length} رکورد پیدا شد`);
-
-        for (let i = 0; i < rows.length; i++) {
-
-            let username = String(rows[i].username || "").trim();
-            const message = String(rows[i].message || "");
-
-            if (!username.startsWith("@")) {
-                username = "@" + username;
-            }
-
-            const body = {
-                channel: username,
-                text: message
-            };
-
-            try {
-
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(body)
-                });
-
-                const result = await response.text();
-
-                log(
-                    `${response.status} | ${username} | ${result}`
-                );
-
-            } catch (err) {
-
-                log(
-                    `ERROR | ${username} | ${err.message}`
-                );
-
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 500));
+    <script>
+        function log(text, type = '') {
+            const div = document.getElementById("log");
+            const time = new Date().toLocaleTimeString('fa-IR');
+            let className = '';
+            if (type === 'error') className = 'error';
+            if (type === 'success') className = 'success';
+            
+            div.innerHTML += `<span>[${time}] </span><span class="${className}">${text}</span><br>`;
+            div.scrollTop = div.scrollHeight;
         }
 
-        log("پایان ارسال");
-    };
+        async function sendMessages() {
+            const webhook = document.getElementById("webhook").value.trim();
+            const fileInput = document.getElementById("excelFile");
 
-    reader.readAsArrayBuffer(file);
-}
+            if (!webhook) {
+                alert("لطفاً آدرس Webhook را وارد کنید");
+                return;
+            }
+            if (!fileInput.files.length) {
+                alert("فایل اکسل را انتخاب کنید");
+                return;
+            }
 
-</script>
+            const file = fileInput.files[0];
+            const reader = new FileReader();
 
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const rows = XLSX.utils.sheet_to_json(sheet);
+
+                    log(`تعداد ${rows.length} رکورد پیدا شد`, 'success');
+
+                    for (let i = 0; i < rows.length; i++) {
+                        let username = String(rows[i].username || "").trim();
+                        const message = String(rows[i].message || "").trim();
+
+                        if (!username) {
+                            log(`ردیف ${i+1}: نام کاربری خالی است`, 'error');
+                            continue;
+                        }
+                        if (!message) {
+                            log(`ردیف ${i+1}: پیام خالی است`, 'error');
+                            continue;
+                        }
+
+                        if (!username.startsWith("@")) {
+                            username = "@" + username;
+                        }
+
+                        const body = {
+                            channel: username,
+                            text: message
+                        };
+
+                        try {
+                            const response = await fetch(webhook, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(body),
+                                mode: "cors"
+                            });
+
+                            let resultText = await response.text();
+                            if (response.ok) {
+                                log(`${response.status} | ${username} | ✓ ارسال شد`, 'success');
+                            } else {
+                                log(`${response.status} | ${username} | ${resultText || 'خطا'}`, 'error');
+                            }
+                        } catch (err) {
+                            log(`ERROR | ${username} | ${err.message}`, 'error');
+                        }
+
+                        // تأخیر برای جلوگیری از بلاک شدن
+                        await new Promise(resolve => setTimeout(resolve, 600));
+                    }
+
+                    log("✅ پایان ارسال همه پیام‌ها", 'success');
+                } catch (err) {
+                    log(`خطای کلی: ${err.message}`, 'error');
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
 </body>
 </html>
