@@ -37,7 +37,7 @@
         button:hover { background: #0055aa; }
         #log {
             margin-top: 20px;
-            height: 480px;
+            height: 500px;
             overflow-y: auto;
             border: 1px solid #ddd;
             padding: 15px;
@@ -65,8 +65,14 @@
     </div>
 
     <script>
-        // پراکسی جدید و قوی‌تر
-        const CORS_PROXY = "https://corsproxy.io/?";
+        // چند پراکسی برای امتحان خودکار
+        const PROXIES = [
+            "https://corsproxy.io/?",
+            "https://proxy.corsfix.com/?",
+            "https://api.allorigins.win/raw?url="
+        ];
+
+        let currentProxyIndex = 0;
 
         function log(text, type = '') {
             const div = document.getElementById("log");
@@ -82,8 +88,6 @@
 
             if (!webhook) return alert("Webhook را وارد کنید");
             if (!fileInput.files.length) return alert("فایل اکسل انتخاب کنید");
-
-            const proxyUrl = CORS_PROXY + encodeURIComponent(webhook);
 
             const file = fileInput.files[0];
             const reader = new FileReader();
@@ -106,27 +110,31 @@
                         }
                         if (!username.startsWith("@")) username = "@" + username;
 
-                        try {
-                            const response = await fetch(proxyUrl, {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify({
-                                    channel: username,
-                                    text: message
-                                })
-                            });
+                        let success = false;
+                        for (let p = 0; p < PROXIES.length && !success; p++) {
+                            const proxyUrl = PROXIES[p] + encodeURIComponent(webhook);
+                            try {
+                                const response = await fetch(proxyUrl, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ channel: username, text: message })
+                                });
 
-                            const resultText = await response.text().catch(() => "بدون پاسخ");
+                                const resultText = await response.text().catch(() => "");
 
-                            if (response.ok) {
-                                log(`✅ ${username} | ارسال موفق`, 'success');
-                            } else {
-                                log(`❌ ${username} | ${response.status} - ${resultText.substring(0, 150)}`, 'error');
+                                if (response.ok) {
+                                    log(`✅ ${username} | ارسال موفق`, 'success');
+                                    success = true;
+                                } else {
+                                    log(`⚠️ ${username} | ${response.status} (پراکسی ${p+1})`, 'error');
+                                }
+                            } catch (err) {
+                                log(`❌ پراکسی ${p+1} خطا: ${err.message}`, 'error');
                             }
-                        } catch (err) {
-                            log(`❌ ${username} | خطای اتصال: ${err.message}`, 'error');
+                        }
+
+                        if (!success) {
+                            log(`❌ ${username} | همه پراکسی‌ها شکست خوردند`, 'error');
                         }
 
                         await new Promise(r => setTimeout(r, 1000));
