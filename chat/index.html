@@ -65,8 +65,8 @@
     </div>
 
     <script>
-        // پراکسی Cloudflare (بهترین گزینه فعلی)
-        const CORS_PROXY = "https://test.cors.workers.dev/?";
+        // پراکسی جدید killcors
+        const CORS_PROXY = "https://proxy.killcors.com/?";
 
         function log(text, type = '') {
             const div = document.getElementById("log");
@@ -129,7 +129,7 @@
                             log(`❌ ${username} | خطای اتصال: ${err.message}`, 'error');
                         }
 
-                        await new Promise(r => setTimeout(r, 1000)); // تأخیر ۱ ثانیه
+                        await new Promise(r => setTimeout(r, 1000));
                     }
                     log("🎉 عملیات تمام شد!", 'success');
                 } catch (err) {
