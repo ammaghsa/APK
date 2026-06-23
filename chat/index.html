@@ -13,27 +13,40 @@
             max-width: 900px;
             margin: 40px auto;
             padding: 20px;
+            background: #f4f4f4;
         }
-        .container { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            font-size: 16px;
+        }
         button {
             background: #0066cc;
             color: white;
             border: none;
-            font-size: 16px;
             cursor: pointer;
         }
+        button:hover { background: #0055aa; }
         #log {
             margin-top: 20px;
-            height: 450px;
+            height: 480px;
             overflow-y: auto;
             border: 1px solid #ddd;
             padding: 15px;
-            background: #f8f8f8;
-            border-radius: 5px;
+            background: #fafafa;
+            border-radius: 8px;
+            font-size: 14px;
         }
-        .success { color: green; }
-        .error { color: red; }
+        .success { color: #006600; }
+        .error { color: #cc0000; }
     </style>
 </head>
 <body>
@@ -52,12 +65,14 @@
     </div>
 
     <script>
-        const CORS_PROXY = "https://corsproxy.io/?";
+        // پراکسی جدید و قوی‌تر
+        const CORS_PROXY = "https://proxy.corsfix.com/?";
 
         function log(text, type = '') {
             const div = document.getElementById("log");
             const time = new Date().toLocaleTimeString('fa-IR');
-            div.innerHTML += `<b>[${time}]</b> <span class="${type}">${text}</span><br>`;
+            const colorClass = type === 'success' ? 'success' : (type === 'error' ? 'error' : '');
+            div.innerHTML += `<b>[${time}]</b> <span class="${colorClass}">${text}</span><br>`;
             div.scrollTop = div.scrollHeight;
         }
 
@@ -66,9 +81,8 @@
             const fileInput = document.getElementById("excelFile");
 
             if (!webhook) return alert("Webhook را وارد کنید");
-            if (!fileInput.files.length) return alert("فایل اکسل را انتخاب کنید");
+            if (!fileInput.files.length) return alert("فایل اکسل انتخاب کنید");
 
-            // استفاده از Proxy
             const proxyUrl = CORS_PROXY + encodeURIComponent(webhook);
 
             const file = fileInput.files[0];
@@ -95,30 +109,34 @@
                         try {
                             const response = await fetch(proxyUrl, {
                                 method: "POST",
-                                headers: { "Content-Type": "application/json" },
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
                                 body: JSON.stringify({
                                     channel: username,
                                     text: message
                                 })
                             });
 
-                            const result = await response.text();
+                            const resultText = await response.text().catch(() => "");
+
                             if (response.ok) {
-                                log(`✅ ${username} | ارسال شد`, 'success');
+                                log(`✅ ${username} | ارسال موفق`, 'success');
                             } else {
-                                log(`❌ ${username} | ${response.status} - ${result}`, 'error');
+                                log(`❌ ${username} | ${response.status} - ${resultText.substring(0, 100)}`, 'error');
                             }
                         } catch (err) {
                             log(`❌ ${username} | خطا: ${err.message}`, 'error');
                         }
 
-                        await new Promise(r => setTimeout(r, 700));
+                        await new Promise(r => setTimeout(r, 800)); // تأخیر بیشتر
                     }
-                    log("🎉 تمام شد!", 'success');
+                    log("🎉 عملیات تمام شد!", 'success');
                 } catch (err) {
                     log("خطای کلی: " + err.message, 'error');
                 }
             };
+
             reader.readAsArrayBuffer(file);
         }
     </script>
