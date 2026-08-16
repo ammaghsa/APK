@@ -239,11 +239,11 @@ setInterval(checkTime, 10000);
 function sendAttendanceList() {
 
     let message = "📋 لیست حضور\n";
-    message += "━━━━━━━━━━━━━━\n\n";
+    message += "━━━━━━━━━━━━━━\n";
 
     joinedUsers.forEach((u, i) => {
-        message += `${i + 1}. ${u.name}\n`;
-        message += `⏱ ${u.time}\n\n`;
+        message += `${i + 1}. ${u.name}`;
+        message += `| ${u.time}\n`;
     });
 
     if (selectedAbsentees.length > 0) {
