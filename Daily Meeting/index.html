@@ -243,7 +243,7 @@ function sendAttendanceList() {
 
     joinedUsers.forEach((u, i) => {
         message += `${i + 1}. ${u.name}`;
-        message += `| ${u.time}\n`;
+        message += ` | ${u.time}\n`;
     });
 
     if (selectedAbsentees.length > 0) {
