@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جدول شیفت ماهانه</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --primary: #2f3e56;
+    --primary-dark: #1e2a3d;
+    --accent: #3b6ea5;
+    --accent-light: #eaf1f8;
+    --danger: #c0392b;
+    --danger-dark: #922b21;
+    --border: #e2e5ea;
+    --text: #26303d;
+    --muted: #7a8494;
+    --weekend: #fdecea;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+    background: var(--bg);
+    padding: 10px 12px 20px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  h1 {
+    text-align: center;
+    color: var(--primary);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin: 0 0 2px;
+    font-size: 20px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 10px rgba(30, 42, 61, 0.06);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+
+  .card h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 12.5px;
+    white-space: nowrap;
+    line-height: 1.3;
+  }
+
+  th {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  #shiftTable tbody tr:nth-child(even) { background: #fafbfc; }
+  #shiftTable tbody tr:hover { background: var(--accent-light); }
+  #shiftTable tbody tr.weekend-row { background: var(--weekend); }
+  #shiftTable tbody tr.weekend-row:hover { background: #fbdfdb; }
+
+  .table-scroll {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 10px rgba(30, 42, 61, 0.06);
+    margin-bottom: 12px;
+  }
+
+  .date-cell {
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .date-cell .weekday {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .date-cell .sep {
+    color: var(--border);
+    margin: 0 3px;
+  }
+
+  select {
+    padding: 3px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    width: 100%;
+    min-width: 100px;
+    font-family: inherit;
+    font-size: 12px;
+    background: #fff;
+    color: var(--text);
+    height: 26px;
+  }
+  select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  td.shift-cell {
+    min-width: 110px;
+    padding: 3px 4px;
+  }
+  td.shift-cell select {
+    display: block;
+    width: 100%;
+  }
+
+  button {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: background 0.15s ease;
+  }
+  button:hover { background: var(--primary-dark); }
+
+  .btn-row {
+    text-align: center;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn-secondary {
+    background: var(--accent);
+  }
+  .btn-secondary:hover { background: #2f5a86; }
+
+  /* بخش انتخاب ماه */
+  .month-card {
+    padding: 8px 14px;
+    display: inline-block;
+    max-width: 100%;
+  }
+  .month-select-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;
+  }
+  .month-card-label {
+    font-size: 12.5px;
+    color: var(--muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .compact-field {
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    height: 28px;
+  }
+  #monthSelect.compact-field {
+    min-width: 90px;
+  }
+  .year-field {
+    width: 70px;
+  }
+  .count-field {
+    width: 55px;
+  }
+  .btn-small {
+    padding: 4px 12px;
+    font-size: 12px;
+    height: 28px;
+  }
+
+  /* لیست نفرات */
+  .side-by-side {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .people-card {
+    flex: 1 1 320px;
+    min-width: 280px;
+  }
+  .summary-card {
+    flex: 1 1 260px;
+    min-width: 220px;
+  }
+  .summary-card table { font-size: 12px; }
+
+  #peopleList {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 8px 0;
+  }
+  #peopleList li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+  #peopleList li input[type="text"] {
+    flex: 1 1 70px;
+    min-width: 60px;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+  }
+  #peopleList li button {
+    background: var(--danger);
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  #peopleList li button:hover { background: var(--danger-dark); }
+
+  .color-select {
+    width: 44px;
+    min-width: 44px;
+    height: 28px;
+    padding: 2px 4px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 10px;
+    text-align: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .add-person-row {
+    display: flex;
+    gap: 6px;
+  }
+  .add-person-row input {
+    flex: 1;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  th .col-remove-btn {
+    background: var(--danger);
+    border: none;
+    color: #fff;
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  th .col-remove-btn:hover { background: var(--danger-dark); }
+
+  select.colTimeSelect {
+    font-size: 12px;
+    padding: 4px 6px;
+    margin: 4px 0;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+  }
+  select.colTimeSelect option {
+    color: #26303d;
+  }
+
+  #summary th { background: var(--accent); }
+  #summary td:first-child { font-weight: 600; }
+
+  h2.section-title {
+    text-align: center;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 15px;
+    margin: 10px 0 8px;
+  }
+</style>
+<script id="scripts" type="text/javascript" src="/scripts_5b78a9a0ebbbbb75eda23b4e12a60813ca1e257a.js"></script>
+<meta name="referrer" content="same-origin" />
+
+			<link rel="icon" sizes="16x16" type="image/png" href=/assets/favicon_16.png />
+			<link rel="icon" sizes="32x32" type="image/png" href=/assets/favicon_32.png />
+				<link rel="icon" sizes="any" type="image/svg+xml" href=/assets/favicon.svg />
+<title>APK GROUP</title><meta name="application-name" content="APK GROUP"><meta name="apple-mobile-web-app-title" content="APK GROUP">
+<meta http-equiv="content-language" content=""><meta name="language" content="">
+<meta name="robots" content="INDEX,FOLLOW">
+<meta name="msvalidate.01" content="">
+<meta name="google-site-verification" content="">
+<meta property="fb:app_id" content="">
+<base href="/">
+<script id="scripts" type="text/javascript" src="/scripts_5b78a9a0ebbbbb75eda23b4e12a60813ca1e257a.js"></script>
+<meta name="referrer" content="same-origin" />
+
+			<link rel="icon" sizes="16x16" type="image/png" href=/assets/favicon_16.png />
+			<link rel="icon" sizes="32x32" type="image/png" href=/assets/favicon_32.png />
+				<link rel="icon" sizes="any" type="image/svg+xml" href=/assets/favicon.svg />
+<title>APK GROUP</title><meta name="application-name" content="APK GROUP"><meta name="apple-mobile-web-app-title" content="APK GROUP">
+<meta http-equiv="content-language" content=""><meta name="language" content="">
+<meta name="robots" content="INDEX,FOLLOW">
+<meta name="msvalidate.01" content="">
+<meta name="google-site-verification" content="">
+<meta property="fb:app_id" content="">
+<base href="/">
+</head>
+<body>
+
+<noscript style="color: white; text-align:center">
+	You need to enable JavaScript to run this app.
+</noscript>
+<div id="react-root">
+	<div class="page-loading" role="alert" aria-busy="true" aria-live="polite" aria-label="loading">
+		<div class="loading__animation">
+			<div class="loading__animation__bounce"></div>
+			<div class="loading__animation__bounce"></div>
+			<div class="loading__animation__bounce"></div>
+		</div>
+	</div>
+</div>
+
+<style id='css-variables'> :root {}</style>
+
+
+<noscript style="color: white; text-align:center">
+	You need to enable JavaScript to run this app.
+</noscript>
+<div id="react-root">
+	<div class="page-loading" role="alert" aria-busy="true" aria-live="polite" aria-label="loading">
+		<div class="loading__animation">
+			<div class="loading__animation__bounce"></div>
+			<div class="loading__animation__bounce"></div>
+			<div class="loading__animation__bounce"></div>
+		</div>
+	</div>
+</div>
+
+<style id='css-variables'> :root {}</style>
+
+<div class="wrap">
+
+  <h1>جدول شیفت ماهانه</h1>
+  <p class="subtitle">مدیریت شیفت روز و شب بر اساس تقویم شمسی</p>
+
+  <div class="card month-card">
+    <div class="month-select-row">
+      <span class="month-card-label">ماه:</span>
+      <select id="monthSelect" class="compact-field"></select>
+      <span class="month-card-label">سال:</span>
+      <select id="yearSelect" class="compact-field year-field"></select>
+      <span class="month-card-label">تعداد نفرات شیفت روز:</span>
+      <input type="number" id="dayCountInput" class="compact-field count-field" value="1" min="1" max="10" onchange="setDayShiftCount(this.value)">
+      <span class="month-card-label">تعداد نفرات شیفت شب:</span>
+      <input type="number" id="nightCountInput" class="compact-field count-field" value="1" min="1" max="10" onchange="setNightShiftCount(this.value)">
+      <button class="btn-small" onclick="rebuildTable()">اعمال</button>
+    </div>
+  </div>
+
+  <div class="side-by-side">
+    <div class="card people-card">
+      <h3>لیست نفرات</h3>
+      <ul id="peopleList"></ul>
+      <div class="add-person-row">
+        <input type="text" id="newPersonName" placeholder="نام نفر جدید را وارد کنید">
+        <button onclick="addPerson()">افزودن نفر</button>
+      </div>
+    </div>
+
+    <div class="card summary-card">
+      <h3>جمع شیفت‌های هر نفر</h3>
+      <div class="table-scroll">
+        <table id="summary">
+          <thead>
+            <tr>
+              <th>نام</th>
+              <th>روز</th>
+              <th>شب</th>
+              <th>جمع</th>
+            </tr>
+          </thead>
+          <tbody id="summaryBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button onclick="rebuildTable()">ساخت / به‌روزرسانی جدول شیفت</button>
+    <button onclick="updateSummary()">محاسبه جمع شیفت‌ها</button>
+  </div>
+
+  <h2 class="section-title">جدول شیفت روزانه</h2>
+  <div class="table-scroll">
+    <table id="shiftTable">
+      <thead id="shiftHead"></thead>
+      <tbody id="shiftBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  /* ---------------- تقویم شمسی (الگوریتم استاندارد تبدیل جلالی) ---------------- */
+  function div(a, b) { return ~~(a / b); }
+  function mod(a, b) { return a - ~~(a / b) * b; }
+
+  function jalCal(jy) {
+    var breaks = [-61, 9, 38, 199, 426, 686, 756, 818, 1111, 1181, 1210, 1635, 2060, 2097, 2192, 2262, 2324, 2394, 2456, 3178];
+    var bl = breaks.length, gy = jy + 621, leapJ = -14, jp = breaks[0], jm, jump, leap, n, i;
+    if (jy < jp || jy >= breaks[bl - 1]) throw new Error('سال شمسی نامعتبر است: ' + jy);
+    for (i = 1; i < bl; i += 1) {
+      jm = breaks[i];
+      jump = jm - jp;
+      if (jy < jm) break;
+      leapJ = leapJ + div(jump, 33) * 8 + div(mod(jump, 33), 4);
+      jp = jm;
+    }
+    n = jy - jp;
+    leapJ = leapJ + div(n, 33) * 8 + div(mod(n, 33) + 3, 4);
+    if (mod(jump, 33) === 4 && jump - n === 4) leapJ += 1;
+    var leapG = div(gy, 4) - div((div(gy, 100) + 1) * 3, 4) - 150;
+    var march = 20 + leapJ - leapG;
+    if (jump - n < 6) n = n - jump + div(jump, 33) * 33;
+    leap = mod(mod(n + 1, 33) - 1, 4);
+    if (leap === -1) leap = 4;
+    return { leap: leap, gy: gy, march: march };
+  }
+
+  function isLeapJalaaliYear(jy) { return jalCal(jy).leap === 0; }
+
+  function jalaaliMonthLength(jy, jm) {
+    if (jm <= 6) return 31;
+    if (jm <= 11) return 30;
+    return isLeapJalaaliYear(jy) ? 30 : 29;
+  }
+
+  function g2d(gy, gm, gd) {
+    var d = div((gy + div(gm - 8, 6) + 100100) * 1461, 4)
+      + div(153 * mod(gm + 9, 12) + 2, 5) + gd - 34840408;
+    d = d - div(div(gy + 100100 + div(gm - 8, 6), 100) * 3, 4) + 752;
+    return d;
+  }
+
+  function d2g(jdn) {
+    var j, i, gd, gm, gy;
+    j = 4 * jdn + 139361631;
+    j = j + div(div(4 * jdn + 183187720, 146097) * 3, 4) * 4 - 3908;
+    i = div(mod(j, 1461), 4) * 5 + 308;
+    gd = div(mod(i, 153), 5) + 1;
+    gm = mod(div(i, 153), 12) + 1;
+    gy = div(j, 1461) - 100100 + div(8 - gm, 6);
+    return { gy: gy, gm: gm, gd: gd };
+  }
+
+  function j2d(jy, jm, jd) {
+    var r = jalCal(jy);
+    return g2d(r.gy, 3, r.march) + (jm - 1) * 31 - div(jm, 7) * (jm - 7) + jd - 1;
+  }
+
+  function jalaaliToWeekday(jy, jm, jd) {
+    var jdn = j2d(jy, jm, jd);
+    var g = d2g(jdn);
+    var dateObj = new Date(g.gy, g.gm - 1, g.gd);
+    var names = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"];
+    return names[dateObj.getDay()];
+  }
+
+  var persianMonthNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+
+  function toPersianDigits(num) {
+    var persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    return String(num).replace(/\d/g, function (d) { return persianDigits[d]; });
+  }
+
+  function initMonthSelect() {
+    var sel = document.getElementById("monthSelect");
+    var html = "";
+    persianMonthNames.forEach(function (name, idx) {
+      html += '<option value="' + (idx + 1) + '">' + name + '</option>';
+    });
+    sel.innerHTML = html;
+
+    // سلکت سال با گزینه‌های محدود ۱۴۰۵ و ۱۴۰۶
+    var yearSel = document.getElementById("yearSelect");
+    var years = [1405, 1406];
+    var yearHtml = "";
+    years.forEach(function (y) {
+      yearHtml += '<option value="' + y + '">' + toPersianDigits(y) + '</option>';
+    });
+    yearSel.innerHTML = yearHtml;
+
+    // تخمین سال شمسی فعلی برای انتخاب پیش‌فرض
+    var now = new Date();
+    var approxJy = now.getFullYear() - (now.getMonth() < 2 ? 622 : 621);
+    if (years.indexOf(approxJy) !== -1) {
+      yearSel.value = approxJy;
+    } else {
+      yearSel.value = years[0];
+    }
+  }
+
+  /* ---------------- داده‌های اصلی برنامه ---------------- */
+  let people = ["علی احمدی", "حسن قلی", "مسعود زیبا", "فرید"];
+  const defaultPersonColor = "#ffffff";
+  const pastelPalette = [
+    { name: "صورتی ملایم", color: "#FADADD" },
+    { name: "هلویی", color: "#FDEBD0" },
+    { name: "زرد کم‌رنگ", color: "#FCF3CF" },
+    { name: "سبز نعنایی", color: "#D9F2E6" },
+    { name: "آبی آسمانی", color: "#D6EAF8" },
+    { name: "بنفش لاوندر", color: "#E4D9F5" },
+    { name: "رزگلد ملایم", color: "#F5D9E4" },
+    { name: "سبز زیتونی روشن", color: "#DDE6D5" }
+  ];
+  let personColors = {};
+  people.forEach(p => personColors[p] = defaultPersonColor);
+
+  let dayShiftCols = [{ id: "d1", label: "شیفت روز ۱", time: "" }];
+  let nightShiftCols = [{ id: "n1", label: "شیفت شب ۱", time: "" }];
+  let dayColCounter = 1;
+  let nightColCounter = 1;
+
+  function renderPeopleList() {
+    const list = document.getElementById("peopleList");
+    let html = "";
+    people.forEach((p, idx) => {
+      const currentColor = personColors[p] || defaultPersonColor;
+      const isNoneSelected = currentColor === defaultPersonColor;
+
+      let options = `<option value="${defaultPersonColor}" style="background:#ffffff; color:#7a8494;" ${isNoneSelected ? "selected" : ""}>بدون رنگ</option>`;
+      pastelPalette.forEach(item => {
+        const isSelected = currentColor.toLowerCase() === item.color.toLowerCase();
+        options += `<option value="${item.color}" style="background:${item.color}; color:${item.color};" ${isSelected ? "selected" : ""}>■■■■■■■■</option>`;
+      });
+
+      html += `
+        <li>
+          <input type="text" value="${p}" onchange="renamePerson(${idx}, this.value)">
+          <select class="color-select" style="background:${currentColor}; color:${isNoneSelected ? "#7a8494" : currentColor};" onchange="setPersonColor('${p}', this.value)">${options}</select>
+          <button onclick="removePerson(${idx})">حذف</button>
+        </li>
+      `;
+    });
+    list.innerHTML = html;
+  }
+
+
+  function setPersonColor(name, color) {
+    personColors[name] = color;
+    renderPeopleList();
+    recolorAllCells();
+  }
+
+  function addPerson() {
+    const input = document.getElementById("newPersonName");
+    const name = input.value.trim();
+    if (!name) { alert("لطفاً یک نام وارد کنید."); return; }
+    if (people.includes(name)) { alert("این نام قبلاً در لیست وجود دارد."); return; }
+    people.push(name);
+    personColors[name] = defaultPersonColor;
+    input.value = "";
+    renderPeopleList();
+    rebuildTable();
+  }
+
+  function removePerson(idx) {
+    const name = people[idx];
+    delete personColors[name];
+    people.splice(idx, 1);
+    renderPeopleList();
+    rebuildTable();
+  }
+
+  function renamePerson(idx, newName) {
+    newName = newName.trim();
+    if (newName) {
+      const oldName = people[idx];
+      personColors[newName] = personColors[oldName] || defaultPersonColor;
+      if (newName !== oldName) delete personColors[oldName];
+      people[idx] = newName;
+    }
+    renderPeopleList();
+    rebuildTable();
+  }
+
+  function setDayShiftCount(value) {
+    let count = parseInt(value, 10);
+    if (!count || count < 1) count = 1;
+    if (count > 10) count = 10;
+    while (dayShiftCols.length < count) {
+      dayColCounter++;
+      dayShiftCols.push({ id: "d" + dayColCounter, label: "", time: "" });
+    }
+    while (dayShiftCols.length > count) {
+      dayShiftCols.pop();
+    }
+    document.getElementById("dayCountInput").value = count;
+    relabelColumns();
+    rebuildTable();
+  }
+
+  function setNightShiftCount(value) {
+    let count = parseInt(value, 10);
+    if (!count || count < 1) count = 1;
+    if (count > 10) count = 10;
+    while (nightShiftCols.length < count) {
+      nightColCounter++;
+      nightShiftCols.push({ id: "n" + nightColCounter, label: "", time: "" });
+    }
+    while (nightShiftCols.length > count) {
+      nightShiftCols.pop();
+    }
+    document.getElementById("nightCountInput").value = count;
+    relabelColumns();
+    rebuildTable();
+  }
+
+  function setColumnTime(type, colId, value) {
+    const list = type === "day" ? dayShiftCols : nightShiftCols;
+    const col = list.find(c => c.id === colId);
+    if (col) col.time = value;
+  }
+
+  function removeDayShiftColumn(colId) {
+    if (dayShiftCols.length <= 1) { alert("حداقل باید یک ستون شیفت روز باقی بماند."); return; }
+    dayShiftCols = dayShiftCols.filter(c => c.id !== colId);
+    relabelColumns();
+    document.getElementById("dayCountInput").value = dayShiftCols.length;
+    rebuildTable();
+  }
+
+  function removeNightShiftColumn(colId) {
+    if (nightShiftCols.length <= 1) { alert("حداقل باید یک ستون شیفت شب باقی بماند."); return; }
+    nightShiftCols = nightShiftCols.filter(c => c.id !== colId);
+    relabelColumns();
+    document.getElementById("nightCountInput").value = nightShiftCols.length;
+    rebuildTable();
+  }
+
+  function relabelColumns() {
+    dayShiftCols.forEach((c, i) => c.label = "شیفت روز " + toPersianDigits(i + 1));
+    nightShiftCols.forEach((c, i) => c.label = "شیفت شب " + toPersianDigits(i + 1));
+  }
+
+  function buildOptions(selected) {
+    let html = '<option value="">-- انتخاب --</option>';
+    people.forEach(p => {
+      html += `<option value="${p}" ${p === selected ? "selected" : ""}>${p}</option>`;
+    });
+    return html;
+  }
+
+  const dayTimeOptions = ["۰۶-۱۸", "۰۷-۱۹", "۰۸-۲۰"];
+  const nightTimeOptions = ["۱۸-۰۶", "۱۹-۰۷", "۲۰-۰۸"];
+
+  function buildTimeOptions(type, selected) {
+    const opts = type === "day" ? dayTimeOptions : nightTimeOptions;
+    let html = '<option value="">-- ساعت --</option>';
+    opts.forEach(t => {
+      html += `<option value="${t}" ${t === selected ? "selected" : ""}>${t}</option>`;
+    });
+    return html;
+  }
+
+  function rebuildTable() {
+    if (people.length === 0) { alert("ابتدا حداقل یک نفر به لیست اضافه کنید."); return; }
+
+    const jy = parseInt(document.getElementById("yearSelect").value, 10);
+    const jm = parseInt(document.getElementById("monthSelect").value, 10);
+    if (!jy || !jm) { alert("لطفاً سال و ماه معتبر وارد کنید."); return; }
+
+    let dayCount;
+    try {
+      dayCount = jalaaliMonthLength(jy, jm);
+    } catch (e) {
+      alert(e.message);
+      return;
+    }
+
+    // نگه‌داشتن انتخاب‌های قبلی
+    const prevValues = {};
+    document.querySelectorAll("select[data-col]").forEach(sel => {
+      prevValues[sel.dataset.day + "_" + sel.dataset.col + "_" + sel.dataset.field] = sel.value;
+    });
+
+    // هدر جدول
+    const head = document.getElementById("shiftHead");
+    let headHtml = '<tr><th>روز</th><th>تاریخ / روز هفته</th>';
+    dayShiftCols.forEach(col => {
+      headHtml += `<th>${col.label}<br>
+        <select class="colTimeSelect" onchange="setColumnTime('day', '${col.id}', this.value)">${buildTimeOptions("day", col.time)}</select><br>
+        <button class="col-remove-btn" onclick="removeDayShiftColumn('${col.id}')">حذف ستون</button></th>`;
+    });
+    nightShiftCols.forEach(col => {
+      headHtml += `<th>${col.label}<br>
+        <select class="colTimeSelect" onchange="setColumnTime('night', '${col.id}', this.value)">${buildTimeOptions("night", col.time)}</select><br>
+        <button class="col-remove-btn" onclick="removeNightShiftColumn('${col.id}')">حذف ستون</button></th>`;
+    });
+    headHtml += '</tr>';
+    head.innerHTML = headHtml;
+
+    // بدنه جدول
+    const body = document.getElementById("shiftBody");
+    let rows = "";
+    for (let day = 1; day <= dayCount; day++) {
+      let weekday = "";
+      try {
+        weekday = jalaaliToWeekday(jy, jm, day);
+      } catch (e) {
+        weekday = "-";
+      }
+      const isWeekend = (weekday === "جمعه");
+      const dateLabel = toPersianDigits(day) + " " + persianMonthNames[jm - 1] + " " + toPersianDigits(jy);
+
+      rows += `<tr class="${isWeekend ? 'weekend-row' : ''}">`;
+      rows += `<td>${toPersianDigits(day)}</td>`;
+      rows += `<td class="date-cell"><span class="weekday">${weekday}</span><span class="sep">|</span>${dateLabel}</td>`;
+      dayShiftCols.forEach(col => {
+        const personKey = day + "_" + col.id + "_person";
+        rows += `<td class="shift-cell">
+          <select class="dayShift" data-day="${day}" data-col="${col.id}" data-field="person" onchange="handleCellChange(this)">${buildOptions(prevValues[personKey])}</select>
+        </td>`;
+      });
+      nightShiftCols.forEach(col => {
+        const personKey = day + "_" + col.id + "_person";
+        rows += `<td class="shift-cell">
+          <select class="nightShift" data-day="${day}" data-col="${col.id}" data-field="person" onchange="handleCellChange(this)">${buildOptions(prevValues[personKey])}</select>
+        </td>`;
+      });
+      rows += "</tr>";
+    }
+    body.innerHTML = rows;
+    recolorAllCells();
+    updateSummary();
+  }
+
+  function handleCellChange(sel) {
+    applyCellColor(sel);
+    updateSummary();
+  }
+
+  function applyCellColor(sel) {
+    const name = sel.value;
+    const color = name ? (personColors[name] || defaultPersonColor) : "";
+    const hasColor = color && color !== defaultPersonColor;
+    const td = sel.closest("td");
+    td.style.backgroundColor = hasColor ? color : "";
+    sel.style.backgroundColor = hasColor ? color : "";
+  }
+
+  function recolorAllCells() {
+    document.querySelectorAll(".dayShift, .nightShift").forEach(sel => applyCellColor(sel));
+  }
+
+  function updateSummary() {
+    const counts = {};
+    people.forEach(p => counts[p] = { day: 0, night: 0 });
+
+    document.querySelectorAll(".dayShift").forEach(sel => {
+      if (sel.value && counts[sel.value]) counts[sel.value].day++;
+    });
+    document.querySelectorAll(".nightShift").forEach(sel => {
+      if (sel.value && counts[sel.value]) counts[sel.value].night++;
+    });
+
+    const summaryBody = document.getElementById("summaryBody");
+    let rows = "";
+    people.forEach(p => {
+      const d = counts[p].day;
+      const n = counts[p].night;
+      rows += `
+        <tr>
+          <td>${p}</td>
+          <td>${toPersianDigits(d)}</td>
+          <td>${toPersianDigits(n)}</td>
+          <td>${toPersianDigits(d + n)}</td>
+        </tr>
+      `;
+    });
+    summaryBody.innerHTML = rows;
+  }
+
+  /* ---------------- شروع برنامه ---------------- */
+  initMonthSelect();
+  relabelColumns();
+  renderPeopleList();
+  rebuildTable();
+</script>
+
+</body>
+</html>
