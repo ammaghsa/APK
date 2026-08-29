@@ -70,6 +70,9 @@
     font-size: 13.5px; background:#fbf9f6; color:var(--ink);
   }
   .field textarea{ resize: vertical; min-height: 70px; line-height:1.7; }
+  @media (max-width: 900px){
+    .field input, .field select, .field textarea{ font-size: 16px; }
+  }
   .field input:focus, .field select:focus, .field textarea:focus{
     outline: none; border-color: var(--accent); background:#fff;
   }
@@ -103,8 +106,7 @@
 
   .hero{
     position:relative;
-    aspect-ratio: 1626 / 813;
-    flex: 0 0 auto;
+    flex: 0 0 46%;
     background-size: cover;
     background-position: center;
     background-color: #10182a;
@@ -211,12 +213,14 @@
         <input id="guestRole" type="text" placeholder="مثلاً: مدیر فناوری اطلاعات، شرکت ..." />
       </div>
 
-      <!-- <div class="group-title">دعوت‌کننده (اختیاری)</div>
+      <!--
+      <div class="group-title">دعوت‌کننده (اختیاری)</div>
       <div class="field">
         <label for="inviterName">نام دعوت‌کننده</label>
         <input id="inviterName" type="text" placeholder="مثلاً: آرزو رضایی" />
         <div class="hint">در صورت پرکردن، جای «امن‌پردازان کویر» در خط پایانی می‌نشیند</div>
-      </div> -->
+      </div>
+      -->
 
       <button class="btn" id="downloadBtnJpg">دانلود تصویر (JPG)</button>
       <button class="btn" id="downloadBtnPng" style="margin-top:8px;background:#fff;color:#1c3a63;border:1px solid #1c3a63;">دانلود تصویر (PNG)</button>
@@ -264,7 +268,7 @@
   const guestTitle = el('guestTitle');
   const guestName = el('guestName');
   const guestRole = el('guestRole');
-  const inviterName = el('inviterName');
+  // const inviterName = el('inviterName');
 
   const outRecipient = el('outRecipient');
   const outRole = el('outRole');
@@ -279,10 +283,11 @@
       outRecipient.textContent = title ? (title + ' ' + name) : (name + ' گرامی');
     }
     outRole.textContent = guestRole.value.trim();
-    outSender.textContent = inviterName.value.trim() || 'امن‌پردازان کویر';
+    // outSender.textContent = inviterName.value.trim() || 'امن‌پردازان کویر';
+    outSender.textContent = 'امن‌پردازان کویر';
   }
 
-  [guestTitle, guestName, guestRole, inviterName].forEach(elm => elm.addEventListener('input', update));
+  [guestTitle, guestName, guestRole/*, inviterName*/].forEach(elm => elm.addEventListener('input', update));
   update();
 
   // shared export logic for both formats, maximum quality
@@ -293,16 +298,36 @@
     try{
       const card = el('card');
       const canvas = await html2canvas(card, { scale: 4, backgroundColor: '#ffffff', useCORS: true, allowTaint: true });
-      const link = document.createElement('a');
       const name = guestName.value.trim() || 'davatnameh';
-      if(format === 'png'){
-        link.download = 'davatnameh-elecomp-' + name.replace(/\s+/g,'-') + '.png';
-        link.href = canvas.toDataURL('image/png');
-      }else{
-        link.download = 'davatnameh-elecomp-' + name.replace(/\s+/g,'-') + '.jpg';
-        link.href = canvas.toDataURL('image/jpeg', 1.0);
+      const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+      const ext = format === 'png' ? '.png' : '.jpg';
+      const fileName = 'davatnameh-elecomp-' + name.replace(/\s+/g,'-') + ext;
+      const quality = format === 'png' ? undefined : 1.0;
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, mime, quality));
+      if(!blob) throw new Error('canvas.toBlob failed');
+      const file = new File([blob], fileName, { type: mime });
+
+      // iOS Safari (and some mobile browsers) ignore the download attribute on
+      // data/blob URLs, so prefer the native Share Sheet when files can be shared.
+      if(navigator.canShare && navigator.canShare({ files: [file] })){
+        try{
+          await navigator.share({ files: [file], title: fileName });
+          return;
+        }catch(shareErr){
+          if(shareErr && shareErr.name === 'AbortError') return; // user cancelled share sheet
+          // otherwise fall through to the download-link fallback below
+        }
       }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = url;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 15000);
     }catch(e){
       alert('در تولید تصویر خطایی رخ داد. لطفاً دوباره تلاش کنید.');
       console.error(e);
