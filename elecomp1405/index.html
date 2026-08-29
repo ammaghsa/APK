@@ -151,18 +151,18 @@
     padding: clamp(10px,2.5vw,24px) clamp(16px,4.5vw,40px);
     display:flex; flex-direction:column; justify-content:center;
   }
-  .recipient{ font-size: clamp(12px,2.6vw,15px); font-weight: 800; margin-bottom: 3px; }
-  .recipient-role{ font-size: clamp(10.5px,2.2vw,13px); color:#4a4646; margin-bottom: 6px; }
+  .recipient{ font-size: clamp(11px,2.3vw,14px); font-weight: 800; margin-bottom: 3px; }
+  .recipient-role{ font-size: clamp(9.5px,2vw,12px); color:#4a4646; margin-bottom: 6px; }
   .recipient-role:empty{ display:none; }
-  .salaam-line{ font-size: clamp(10.5px,2.2vw,13px); color:#6b6363; margin-bottom: clamp(5px,1.2vw,10px); }
+  .salaam-line{ font-size: clamp(9.5px,2vw,12px); color:#6b6363; margin-bottom: clamp(5px,1.2vw,10px); }
   .event-line{ font-size: clamp(10px,2vw,12.5px); color:#4a4646; margin: -4px 0 clamp(10px,2.5vw,18px); }
 
   .letter p{
-    font-size: clamp(10.5px,2.2vw,13.5px); line-height: 1.85; color:#2c2a2a; margin: 0 0 clamp(4px,1vw,8px);
+    font-size: clamp(9.5px,2vw,12.5px); line-height: 1.85; color:#2c2a2a; margin: 0 0 clamp(4px,1vw,8px);
     text-align: justify;
   }
 
-  .closing{ margin-top: clamp(4px,1.2vw,10px); font-size: clamp(10.5px,2.2vw,13.5px); text-align: left; }
+  .closing{ margin-top: clamp(4px,1.2vw,10px); font-size: clamp(9.5px,2vw,12.5px); text-align: left; }
   .closing .respect{ margin-bottom: 4px; color:#4a4646; }
   .closing .sender{ font-weight: 800; }
 
@@ -223,7 +223,8 @@
         <div class="hint" id="inviterTitleHint" style="display:none;color:#d81f22;">با پرکردن نام دعوت‌کننده، وارد کردن عنوان الزامی است</div>
       </div>
 
-      <button class="btn" id="downloadBtn">دانلود تصویر دعوت‌نامه (JPG)</button>
+      <button class="btn" id="downloadBtnJpg">دانلود تصویر (JPG)</button>
+      <button class="btn" id="downloadBtnPng" style="margin-top:8px;background:#fff;color:#1c3a63;border:1px solid #1c3a63;">دانلود تصویر (PNG)</button>
     </div>
 
     <!-- preview -->
@@ -244,7 +245,7 @@
             <div class="salaam-line">با سلام و احترام</div>
 
             <div class="letter">
-              <p id="p1">شرکت امن‌پردازان کویر (APK) با افتخار میزبان حضور گرم‌تان در نمایشگاه بین‌المللی الکامپ خواهد بود.</p>
+              <p id="p1">شرکت امن‌پردازان کویر <bdi dir="ltr">(APK)</bdi> با افتخار میزبان حضور گرم‌تان در نمایشگاه بین‌المللی الکامپ خواهد بود.</p>
               <p>در این دوره از نمایشگاه، آخرین دستاوردها و راهکارهای ما در حوزه‌های امنیت اتکاپذیر و نقش هوش مصنوعی و خودکارسازی در مراکز عملیات امنیت را معرفی خواهیم کرد؛ راهکارهایی که با نگاهی به آینده، برای پاسخ‌گویی به نیازهای امروز سازمان‌های پیشرو طراحی‌شده و توسعه یافته‌اند.</p>
               <p>حضور شما، فرصتی ارزشمند برای تبادل نظر و گفت‌وگویی صمیمانه خواهد بود.</p>
             </div>
@@ -314,24 +315,28 @@
   [guestTitle, guestName, guestRole, inviterName, inviterTitle].forEach(elm => elm.addEventListener('input', update));
   update();
 
-  // export as square JPG, maximum quality
-  el('downloadBtn').addEventListener('click', async () => {
+  // shared export logic for both formats, maximum quality
+  async function exportImage(format, btn){
     if(inviterTitleIsRequired() && !inviterTitle.value.trim()){
       inviterTitle.focus();
       alert('چون نام دعوت‌کننده را وارد کرده‌اید، لطفاً عنوان دعوت‌کننده را هم وارد کنید.');
       return;
     }
-    const btn = el('downloadBtn');
     btn.disabled = true;
     const original = btn.textContent;
     btn.textContent = 'در حال آماده‌سازی...';
     try{
       const card = el('card');
-      const canvas = await html2canvas(card, { scale: 3, backgroundColor: '#ffffff', useCORS: true, allowTaint: true });
+      const canvas = await html2canvas(card, { scale: 4, backgroundColor: '#ffffff', useCORS: true, allowTaint: true });
       const link = document.createElement('a');
       const name = guestName.value.trim() || 'davatnameh';
-      link.download = 'davatnameh-elecomp-' + name.replace(/\s+/g,'-') + '.jpg';
-      link.href = canvas.toDataURL('image/jpeg', 1.0);
+      if(format === 'png'){
+        link.download = 'davatnameh-elecomp-' + name.replace(/\s+/g,'-') + '.png';
+        link.href = canvas.toDataURL('image/png');
+      }else{
+        link.download = 'davatnameh-elecomp-' + name.replace(/\s+/g,'-') + '.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 1.0);
+      }
       link.click();
     }catch(e){
       alert('در تولید تصویر خطایی رخ داد. لطفاً دوباره تلاش کنید.');
@@ -340,7 +345,10 @@
       btn.disabled = false;
       btn.textContent = original;
     }
-  });
+  }
+
+  el('downloadBtnJpg').addEventListener('click', () => exportImage('jpg', el('downloadBtnJpg')));
+  el('downloadBtnPng').addEventListener('click', () => exportImage('png', el('downloadBtnPng')));
 </script>
 
 </body>
