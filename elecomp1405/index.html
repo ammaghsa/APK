@@ -211,18 +211,6 @@
         <input id="guestRole" type="text" placeholder="مثلاً: مدیر فناوری اطلاعات، شرکت ..." />
       </div>
 
-<!--      <div class="group-title">دعوت‌کننده (اختیاری)</div>
-      <div class="field">
-        <label for="inviterName">نام دعوت‌کننده</label>
-        <input id="inviterName" type="text" placeholder="مثلاً: آرزو رضایی" />
-        <div class="hint">در صورت پرکردن، جای «امن‌پردازان کویر» در خط پایانی می‌نشیند</div>
-      </div>
-      <div class="field">
-        <label for="inviterTitle">عنوان دعوت‌کننده <span class="req-star" id="inviterTitleReq" style="display:none;color:#d81f22;">*</span></label>
-        <input id="inviterTitle" type="text" placeholder="مثلاً: مدیر فروش" />
-        <div class="hint" id="inviterTitleHint" style="display:none;color:#d81f22;">با پرکردن نام دعوت‌کننده، وارد کردن عنوان الزامی است</div>
-      </div>
--->
       <button class="btn" id="downloadBtn">دانلود تصویر دعوت‌نامه (JPG)</button>
     </div>
 
@@ -268,18 +256,10 @@
   const guestTitle = el('guestTitle');
   const guestName = el('guestName');
   const guestRole = el('guestRole');
-  const inviterName = el('inviterName');
-  const inviterTitle = el('inviterTitle');
-  const inviterTitleReq = el('inviterTitleReq');
-  const inviterTitleHint = el('inviterTitleHint');
 
   const outRecipient = el('outRecipient');
   const outRole = el('outRole');
   const outSender = el('outSender');
-
-  function inviterTitleIsRequired(){
-    return inviterName.value.trim().length > 0;
-  }
 
   function update(){
     const title = guestTitle.value;
@@ -290,37 +270,14 @@
       outRecipient.textContent = title ? (title + ' ' + name) : (name + ' گرامی');
     }
     outRole.textContent = guestRole.value.trim();
-
-    const iName = inviterName.value.trim();
-    const iTitle = inviterTitle.value.trim();
-    if(iName){
-      outSender.textContent = iTitle ? (iName + '، ' + iTitle) : iName;
-    }else{
-      outSender.textContent = 'امن‌پردازان کویر';
-    }
-
-    // toggle required indicator on inviter title
-    const required = inviterTitleIsRequired();
-    inviterTitleReq.style.display = required ? 'inline' : 'none';
-    if(required && !iTitle){
-      inviterTitle.style.borderColor = '#d81f22';
-      inviterTitleHint.style.display = 'block';
-    }else{
-      inviterTitle.style.borderColor = '';
-      inviterTitleHint.style.display = 'none';
-    }
+    outSender.textContent = 'امن‌پردازان کویر';
   }
 
-  [guestTitle, guestName, guestRole, inviterName, inviterTitle].forEach(elm => elm.addEventListener('input', update));
+  [guestTitle, guestName, guestRole].forEach(elm => elm.addEventListener('input', update));
   update();
 
   // export as square JPG, maximum quality
   el('downloadBtn').addEventListener('click', async () => {
-    if(inviterTitleIsRequired() && !inviterTitle.value.trim()){
-      inviterTitle.focus();
-      alert('چون نام دعوت‌کننده را وارد کرده‌اید، لطفاً عنوان دعوت‌کننده را هم وارد کنید.');
-      return;
-    }
     const btn = el('downloadBtn');
     btn.disabled = true;
     const original = btn.textContent;
