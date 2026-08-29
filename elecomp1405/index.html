@@ -148,11 +148,11 @@
   /* ---------- letter body ---------- */
   .body{
     flex:1; min-height:0; overflow:hidden;
-    padding: clamp(14px,3.5vw,34px) clamp(16px,4.5vw,40px) clamp(6px,1.5vw,10px);
-    display:flex; flex-direction:column;
+    padding: clamp(10px,2.5vw,24px) clamp(16px,4.5vw,40px);
+    display:flex; flex-direction:column; justify-content:center;
   }
   .recipient{ font-size: clamp(12px,2.6vw,15px); font-weight: 800; margin-bottom: 3px; }
-  .recipient-role{ font-size: clamp(10.5px,2.2vw,13px); color:#4a4646; margin-bottom: 4px; }
+  .recipient-role{ font-size: clamp(10.5px,2.2vw,13px); color:#4a4646; margin-bottom: 6px; }
   .recipient-role:empty{ display:none; }
   .salaam-line{ font-size: clamp(10.5px,2.2vw,13px); color:#6b6363; margin-bottom: clamp(5px,1.2vw,10px); }
   .event-line{ font-size: clamp(10px,2vw,12.5px); color:#4a4646; margin: -4px 0 clamp(10px,2.5vw,18px); }
@@ -162,7 +162,7 @@
     text-align: justify;
   }
 
-  .closing{ margin-top: auto; padding-bottom: clamp(10px,3vw,30px); font-size: clamp(10.5px,2.2vw,13.5px); text-align: left; }
+  .closing{ margin-top: clamp(4px,1.2vw,10px); font-size: clamp(10.5px,2.2vw,13.5px); text-align: left; }
   .closing .respect{ margin-bottom: 4px; color:#4a4646; }
   .closing .sender{ font-weight: 800; }
 
@@ -181,7 +181,7 @@
 
   <div class="top">
     <h1>سازنده‌ی دعوت‌نامه‌ی اختصاصی نمایشگاه</h1>
-    <p>عکس/لوگوی رویداد را بارگذاری کنید و اطلاعات مهمان را وارد کنید تا دعوت‌نامه شخصی‌سازی شود</p>
+    <p>اطلاعات مهمان و در صورت نیاز دعوت‌کننده را وارد کنید تا دعوت‌نامه شخصی‌سازی شود</p>
   </div>
 
   <div class="app">
@@ -204,7 +204,7 @@
       </div>
       <div class="field">
         <label for="guestName">نام و نام خانوادگی</label>
-        <input id="guestName" type="text" value="احمد علی‌آبادی" placeholder="مثلاً: قاسمی" />
+        <input id="guestName" type="text" placeholder="مثلاً: احمد علی‌آبادی" />
       </div>
       <div class="field">
         <label for="guestRole">سمت و شرکت مهمان (اختیاری)</label>
@@ -213,9 +213,14 @@
 
       <div class="group-title">دعوت‌کننده (اختیاری)</div>
       <div class="field">
-        <label for="inviterName">نام یا سمت دعوت‌کننده</label>
+        <label for="inviterName">نام دعوت‌کننده</label>
         <input id="inviterName" type="text" placeholder="مثلاً: آرزو رضایی" />
         <div class="hint">در صورت پرکردن، جای «امن‌پردازان کویر» در خط پایانی می‌نشیند</div>
+      </div>
+      <div class="field">
+        <label for="inviterTitle">عنوان دعوت‌کننده <span class="req-star" id="inviterTitleReq" style="display:none;color:#d81f22;">*</span></label>
+        <input id="inviterTitle" type="text" placeholder="مثلاً: مدیر فروش" />
+        <div class="hint" id="inviterTitleHint" style="display:none;color:#d81f22;">با پرکردن نام دعوت‌کننده، وارد کردن عنوان الزامی است</div>
       </div>
 
       <button class="btn" id="downloadBtn">دانلود تصویر دعوت‌نامه (JPG)</button>
@@ -264,10 +269,17 @@
   const guestName = el('guestName');
   const guestRole = el('guestRole');
   const inviterName = el('inviterName');
+  const inviterTitle = el('inviterTitle');
+  const inviterTitleReq = el('inviterTitleReq');
+  const inviterTitleHint = el('inviterTitleHint');
 
   const outRecipient = el('outRecipient');
   const outRole = el('outRole');
   const outSender = el('outSender');
+
+  function inviterTitleIsRequired(){
+    return inviterName.value.trim().length > 0;
+  }
 
   function update(){
     const title = guestTitle.value;
@@ -278,14 +290,37 @@
       outRecipient.textContent = title ? (title + ' ' + name) : (name + ' گرامی');
     }
     outRole.textContent = guestRole.value.trim();
-    outSender.textContent = inviterName.value.trim() || 'امن‌پردازان کویر';
+
+    const iName = inviterName.value.trim();
+    const iTitle = inviterTitle.value.trim();
+    if(iName){
+      outSender.textContent = iTitle ? (iName + '، ' + iTitle) : iName;
+    }else{
+      outSender.textContent = 'امن‌پردازان کویر';
+    }
+
+    // toggle required indicator on inviter title
+    const required = inviterTitleIsRequired();
+    inviterTitleReq.style.display = required ? 'inline' : 'none';
+    if(required && !iTitle){
+      inviterTitle.style.borderColor = '#d81f22';
+      inviterTitleHint.style.display = 'block';
+    }else{
+      inviterTitle.style.borderColor = '';
+      inviterTitleHint.style.display = 'none';
+    }
   }
 
-  [guestTitle, guestName, guestRole, inviterName].forEach(elm => elm.addEventListener('input', update));
+  [guestTitle, guestName, guestRole, inviterName, inviterTitle].forEach(elm => elm.addEventListener('input', update));
   update();
 
   // export as square JPG, maximum quality
   el('downloadBtn').addEventListener('click', async () => {
+    if(inviterTitleIsRequired() && !inviterTitle.value.trim()){
+      inviterTitle.focus();
+      alert('چون نام دعوت‌کننده را وارد کرده‌اید، لطفاً عنوان دعوت‌کننده را هم وارد کنید.');
+      return;
+    }
     const btn = el('downloadBtn');
     btn.disabled = true;
     const original = btn.textContent;
